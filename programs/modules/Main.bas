@@ -6,10 +6,26 @@ Public Sub ProcessInputFiles()
     Dim inputSheetValue() As String
     Dim targetSheetValue() As String
     Dim outputValue As Variant
+    Dim templateFilePath As String
+    templateFilePath = GetSingleExcelFile("input\before")
+    If templateFilePath = Empty Then
+        Exit Sub
+    End If
+    Dim targetFilePath As String
+    targetFilePath = GetSingleExcelFile("input\after")
+    If targetFilePath = Empty Then
+        Exit Sub
+    End If
+    Dim workingFolderPath As String
+    workingFolderPath = GetTargetPath(GetParentPath(), "temp")
+    Call GetOrCreateFolder(workingFolderPath)
+    FileCopy templateFilePath, workingFolderPath & "\before.xlsx"
+    FileCopy targetFilePath, workingFolderPath & "\after.xlsx"
+On Error GoTo FINL_L
     Dim templateFile As Workbook
-    Set templateFile = OpenWorkbook("input", INPUT_WORKBOOK_NAME)
     Dim targetFile As Workbook
-    Set targetFile = OpenWorkbook("input", TARGET_WORKBOOK_NAME)
+    Set templateFile = Workbooks.Open(workingFolderPath & "\before.xlsx")
+    Set targetFile = Workbooks.Open(workingFolderPath & "\after.xlsx")
     
     inputSheetValue = GetInputSheetValuesToArray(templateFile.Worksheets(DEFAULT_SHEET_NAME))
     targetSheetValue = GetTargetSheetValuesToArray(targetFile.Worksheets(DEFAULT_SHEET_NAME))
@@ -27,6 +43,7 @@ Public Sub ProcessInputFiles()
     Next i
     
     Call ExportToFile(templateFile, outputValue)
+FINL_L:
     Call CloseWorkbookWithoutSaving(templateFile)
     Call CloseWorkbookWithoutSaving(targetFile)
     
@@ -122,18 +139,14 @@ Private Sub ExportToFile(templateFile As Workbook, setValues As Variant)
     Const inputStartRow As Integer = 2
     Dim outputFolder As String
     Dim outputFilename As String
-    Dim fso As Scripting.FileSystemObject
     Dim outputSheet As Worksheet
     Dim addRowCount As Integer
     Dim addStartRow As Integer
     Dim addEndRow As Integer
     Dim outputLastRangeAddress As String
     
-    Set fso = CreateObject("Scripting.FileSystemObject")
     outputFolder = GetTargetPath(GetParentPath(), outputFolderName)
-    If Not fso.FolderExists(outputFolder) Then
-        fso.CreateFolder outputFolder
-    End If
+    Call GetOrCreateFolder(outputFolder)
     outputFilename = outputFolder & "\" & templateFile.Name
     Set outputSheet = templateFile.Worksheets(DEFAULT_SHEET_NAME)
     addRowCount = UBound(setValues) - (INPUT_LAST_ROW - COLUMNNAME_ROW)
@@ -151,7 +164,6 @@ Private Sub ExportToFile(templateFile As Workbook, setValues As Variant)
 
     Call SaveWorkbook(templateFile, outputFilename)
 End Sub
-
 
 
 

@@ -16,28 +16,20 @@ Public Function GetParentPath() As String
     GetParentPath = fso.GetParentFolderName(workbookPath)
 End Function
 
-Public Function OpenWorkbook(folderName As String, filename As String) As Workbook
-    Dim parentFolder As String
-    Dim inputFolder As String
-    parentFolder = GetParentPath()
-    inputFolder = GetTargetPath(parentFolder, folderName)
-    Set OpenWorkbook = Workbooks.Open(inputFolder & "\" & filename)
-End Function
-
 Public Sub SaveWorkbook(wb As Workbook, outputPath As String)
-On Error GoTo finl_l
+On Error GoTo FINL_L
     Application.DisplayAlerts = False
-    wb.SaveAs filename:=outputPath
+    wb.SaveAs fileName:=outputPath
     wb.Close
-finl_l:
+FINL_L:
     Application.DisplayAlerts = True
 End Sub
 
 Public Sub CloseWorkbookWithoutSaving(wb As Workbook)
-On Error GoTo finl_l
+On Error GoTo FINL_L
     Application.DisplayAlerts = False
     wb.Close SaveChanges:=False
-finl_l:
+FINL_L:
     Application.DisplayAlerts = True
 End Sub
 
@@ -66,3 +58,63 @@ Public Function GetOrCreateSheet(sheetName As String) As Worksheet
     Set GetOrCreateSheet = ws
 End Function
 
+Public Function GetSingleExcelFile(folderName As String) As String
+On Error GoTo FINL_L
+    Dim excelApp As Object
+    Dim wb As Workbook
+    Dim fileName As String
+    Dim fileCount As Integer
+    Dim filePath As String
+    Dim parentFolder As String
+    Dim path As String
+    parentFolder = GetParentPath()
+    path = GetTargetPath(parentFolder, folderName)
+    
+    ' Create Excel Application object
+    Set excelApp = CreateObject("Excel.Application")
+    excelApp.DisplayAlerts = False
+    
+    ' Check if the specified path exists
+    If Dir(path, vbDirectory) = "" Then
+        MsgBox "Specified path does not exist."
+        GetSingleExcelFile = Empty
+    End If
+    
+    ' Loop through files in the folder
+    fileName = Dir(path & "\*.xlsx")
+    Do While fileName <> ""
+        fileCount = fileCount + 1
+        filePath = path & "\" & fileName
+        Set wb = excelApp.Workbooks.Open(filePath)
+        
+        ' Close workbook without saving changes
+        wb.Close False
+        
+        ' Get next file
+        fileName = Dir
+    Loop
+FINL_L:
+    ' Clean up
+    excelApp.DisplayAlerts = True
+    excelApp.Quit
+    Set excelApp = Nothing
+    
+    ' Check file count and return appropriate result
+    If fileCount = 0 Then
+        MsgBox "No Excel files found in the specified folder."
+        GetSingleExcelFile = Empty
+    ElseIf fileCount > 1 Then
+        MsgBox "Multiple Excel files found in the specified folder."
+        GetSingleExcelFile = Empty
+    Else
+        GetSingleExcelFile = filePath
+    End If
+End Function
+
+Public Sub GetOrCreateFolder(folderPath As String)
+    Dim fso As Scripting.FileSystemObject
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If Not fso.FolderExists(folderPath) Then
+        fso.CreateFolder (folderPath)
+    End If
+End Sub
