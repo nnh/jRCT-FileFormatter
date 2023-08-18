@@ -5,8 +5,6 @@ Option Explicit
 '
 Public Const debugFlag As Boolean = False
 Public Const EOF_TEXT As String = "※項目が足らない場合は、適宜行を追加すること。"
-Public Const INPUT_WORKBOOK_NAME As String = "jRCTアップ中のファイル(元のファイル).xlsx"
-Public Const TARGET_WORKBOOK_NAME As String = "CRB提出ファイル(Ptoshからダウンロードしたものを加工）.xlsx"
 Public Const DEFAULT_SHEET_NAME As String = "Sheet1"
 Public Const COLUMNNAME_ROW As Integer = 10
 Public Const FILLER As String = ""
@@ -14,6 +12,7 @@ Public INPUT_LAST_ROW As Integer
 Public INPUT_LAST_COLUMN As Integer
 Public TARGET_LAST_ROW As Integer
 Public TARGET_LAST_COLUMN As Integer
+Public OUTPUT_FILENAME As String
 Public Function GetDeleteRowValues() As String()
     Const fullWidthString As String = "削除"
     Const halfWidthString As String = "X"

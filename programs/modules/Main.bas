@@ -19,6 +19,7 @@ Public Sub ProcessInputFiles()
     Dim workingFolderPath As String
     workingFolderPath = GetTargetPath(GetParentPath(), "temp")
     Call GetOrCreateFolder(workingFolderPath)
+    OUTPUT_FILENAME = Mid(templateFilePath, InStrRev(templateFilePath, "\") + 1)
     FileCopy templateFilePath, workingFolderPath & "\before.xlsx"
     FileCopy targetFilePath, workingFolderPath & "\after.xlsx"
 On Error GoTo FINL_L
@@ -147,7 +148,7 @@ Private Sub ExportToFile(templateFile As Workbook, setValues As Variant)
     
     outputFolder = GetTargetPath(GetParentPath(), outputFolderName)
     Call GetOrCreateFolder(outputFolder)
-    outputFilename = outputFolder & "\" & templateFile.Name
+    outputFilename = outputFolder & "\" & OUTPUT_FILENAME
     Set outputSheet = templateFile.Worksheets(DEFAULT_SHEET_NAME)
     addRowCount = UBound(setValues) - (INPUT_LAST_ROW - COLUMNNAME_ROW)
     addStartRow = COLUMNNAME_ROW + 1
