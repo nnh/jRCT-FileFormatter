@@ -19,7 +19,7 @@ Public Sub ProcessInputFiles()
     Dim workingFolderPath As String
     workingFolderPath = GetTargetPath(GetParentPath(), "temp")
     Call GetOrCreateFolder(workingFolderPath)
-    OUTPUT_FILENAME = Mid(templateFilePath, InStrRev(templateFilePath, "\") + 1)
+    OUTPUT_FILENAME = Mid(targetFilePath, InStrRev(targetFilePath, "\") + 1)
     FileCopy templateFilePath, workingFolderPath & "\before.xlsx"
     FileCopy targetFilePath, workingFolderPath & "\after.xlsx"
 On Error GoTo FINL_L
@@ -52,8 +52,6 @@ FINL_L:
 End Sub
 
 Private Function CompareArrays(inputSheetValue As Variant, targetSheetValue As Variant) As Variant
-    Dim inputKeys As Variant
-    Dim targetKeys As Variant
     Dim keyIndex As Dictionary
     Dim i As Integer
     Dim j As Integer
@@ -72,28 +70,26 @@ Private Function CompareArrays(inputSheetValue As Variant, targetSheetValue As V
     deleteRowValues = GetDeleteRowValues()
     
     Set keyIndex = CreateAssociativeArrayKeyIndex()
-    inputKeys = GenerateKey(inputSheetValue)
-    targetKeys = GenerateKey(targetSheetValue)
     
     rowsCount = UBound(targetSheetValue, 1) - LBound(targetSheetValue, 1) + 1
     colsCount = UBound(targetSheetValue, 2) - LBound(targetSheetValue, 2) + 1
     ReDim resultArray(0 To rowsCount - 1, 0 To colsCount - 1)
     lastRow = rowsCount
     addSeq = lastRow
-    
-    For i = LBound(targetKeys) To UBound(targetKeys)
+    For i = LBound(targetSheetValue) To UBound(targetSheetValue)
         found = False
         For j = 0 To colsCount - 1
             resultArray(i, j) = targetSheetValue(i, j)
         Next j
-        For j = LBound(inputKeys) To UBound(inputKeys)
-            If targetKeys(i) = inputKeys(j) Then
+        For j = LBound(inputSheetValue) To UBound(inputSheetValue)
+            If (resultArray(i, keyIndex("phoneNumber")) = inputSheetValue(j, keyIndex("phoneNumber"))) Or _
+               (resultArray(i, keyIndex("facilityName")) = inputSheetValue(j, keyIndex("facilityName"))) Or _
+               (resultArray(i, keyIndex("facilityAddress")) = inputSheetValue(j, keyIndex("facilityAddress"))) Then
                 resultArray(i, keyIndex("seqNo")) = inputSheetValue(j, keyIndex("seqNo"))
                 found = True
                 Exit For
             End If
         Next j
-        
         If Not found Then
             addSeq = addSeq + 1
             If debugFlag Then
@@ -108,15 +104,16 @@ Private Function CompareArrays(inputSheetValue As Variant, targetSheetValue As V
     Set outputRange = tempWs.Cells(1, 1).Resize(rowsCount, colsCount)
     outputRange.Value = resultArray
     
-    For i = LBound(inputKeys) To UBound(inputKeys)
+    For i = LBound(inputSheetValue) To UBound(inputSheetValue)
         found = False
-        For j = LBound(targetKeys) To UBound(targetKeys)
-            If inputKeys(i) = targetKeys(j) Then
+        For j = LBound(resultArray) To UBound(resultArray)
+            If (inputSheetValue(i, keyIndex("phoneNumber")) = resultArray(j, keyIndex("phoneNumber"))) Or _
+               (inputSheetValue(i, keyIndex("facilityName")) = resultArray(j, keyIndex("facilityName"))) Or _
+               (inputSheetValue(i, keyIndex("facilityAddress")) = resultArray(j, keyIndex("facilityAddress"))) Then
                 found = True
                 Exit For
             End If
         Next j
-        
         If Not found Then
             lastRow = lastRow + 1
             For k = 1 To colsCount - 1

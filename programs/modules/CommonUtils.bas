@@ -28,7 +28,9 @@ Public Function CreateAssociativeArrayKeyIndex() As Dictionary
     assocArray("seqNo") = 1
     assocArray("familyName") = 2
     assocArray("givenName") = 3
+    assocArray("facilityName") = 8
     assocArray("postalCode") = 11
+    assocArray("facilityAddress") = 13
     assocArray("phoneNumber") = 14
     
     Set CreateAssociativeArrayKeyIndex = assocArray
